@@ -6,10 +6,13 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extras.DynamicProxy;
+using Dtos;
 using Entity;
 using Fairhr.Logs;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
@@ -153,6 +156,22 @@ namespace Supplier.WebApi
 
             #region 添加日志平台
             app.UseFairhrLogs();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    FairhrLogs.Error("异常：" + context.Features.Get<IExceptionHandlerFeature>().Error.Message);
+                    ResultData result = new ResultData()
+                    {
+
+                        Code = 500,
+                        Msg = context.Features.Get<IExceptionHandlerFeature>().Error.Message,
+                        Count = 0,
+                        Data = ""
+                    };
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(result));
+                });
+            });
             #endregion
 
             app.UseRouting();

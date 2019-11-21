@@ -31,6 +31,8 @@ namespace Supplier.WebApi.Controllers
         [HttpGet("GetUserById/{id}")]
         public async Task<ResultData> GetUserById(string id)
         {
+
+            throw new System.Exception("测试异常日志");
             //var exist = _redisCacheManager.KeyExists(id);
             //_redisCacheManager.Set(id,"111111", TimeSpan.FromSeconds(200));
             //var val = _redisCacheManager.GetValue(id);
