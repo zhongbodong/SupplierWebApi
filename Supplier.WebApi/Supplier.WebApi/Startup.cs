@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -9,6 +10,10 @@ using Autofac.Extras.DynamicProxy;
 using Dtos;
 using Entity;
 using Fairhr.Logs;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.HttpJob;
+using Hangfire.MySql.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -21,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 using Supplier.WebApi.AutoMapper;
 using Supplier.WebApi.Sugar;
 using Utils.Configuration;
@@ -128,17 +134,35 @@ namespace Supplier.WebApi
             });
             #endregion
 
-            services.AddControllers();
+            #region 定时任务
+          
+            #endregion
+
+            services.AddControllers(o => {
+                // 全局异常过滤
+                //o.Filters.Add(typeof(GlobalExceptionsFilter));
+            }) 
+            //全局配置Json序列化处理
+            .AddNewtonsoftJson(options =>
+            {
+                
+                //不使用驼峰样式的key
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                //设置时间格式
+                //options.SerializerSettings.DateFormatString = "yyyy-MM-dd";
+            }); ;
          
 
 
         }
 
+      
+
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //应用程序服务
-            MyServiceProvider.ServiceProvider = app.ApplicationServices;
+            
 
             if (!env.IsProduction())
             {
@@ -153,6 +177,11 @@ namespace Supplier.WebApi
                 c.RoutePrefix = string.Empty;
             });
             #endregion
+
+
+
+          
+
 
             #region 添加日志平台
             app.UseFairhrLogs();
